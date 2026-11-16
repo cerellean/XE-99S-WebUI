@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f18">
+<title>XE-99S · 10G-EPON 光猫棒控制台</title>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d1522'/><path d='M7 20h18M10 20V13m6 7V9m6 11v-5' stroke='%2338e0c8' stroke-width='2.4' stroke-linecap='round'/></svg>">
+</head>
+<body>
+
+<!-- ===================== 登录 ===================== -->
+<div class="login-wrap" id="loginView">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="login-brand">
+      <svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#0d1522"/>
+        <path d="M7 20h18M10 20V13m6 7V9m6 11v-5" stroke="#38e0c8" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div>
+        <h1>XE-99S</h1>
+        <p>CIG · Cortina CA8271S · 10G-EPON SFP+ ONT</p>
+      </div>
+    </div>
+    <label class="fld">
+      <span>用户名</span>
+      <input type="text" id="loginUser" value="admin" autocapitalize="off" spellcheck="false">
+    </label>
+    <label class="fld">
+      <span>密码</span>
+      <input type="password" id="loginPass" placeholder="默认 admin" autocomplete="current-password">
+    </label>
+    <button class="btn primary block" type="submit" id="loginBtn">登录控制台</button>
+    <p class="login-msg" id="loginMsg"></p>
+    <p class="login-hint">管理地址 <code>192.168.0.1</code> · 请先修改默认密码</p>
+  </form>
+</div>
+
+<!-- ===================== 主体 ===================== -->
+<div class="app" id="appView" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#111a29"/>
+        <path d="M7 20h18M10 20V13m6 7V9m6 11v-5" stroke="#38e0c8" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div class="brand-txt">
+        <strong>XE-99S</strong>
+        <span>ONT Console</span>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm10 8h8V11h-8v10zM3 21h8v-6H3v6zM13 9h8V3h-8v6z"/></svg>
+        <span>总览</span>
+      </button>
+      <button class="nav-item" data-view="pon">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3a7 7 0 0 1 0 14 7 7 0 0 1 0-14zm0 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+        <span>PON 与认证</span>
+      </button>
+      <button class="nav-item" data-view="tlv">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v3H4V5zm0 5.5h16v3H4v-3zM4 16h10v3H4v-3z"/></svg>
+        <span>TLV 伪装</span>
+      </button>
+      <button class="nav-item" data-view="bridge">
+        <svg viewBox="0 0 24 24"><path d="M3 10h4v4H3v-4zm7-4h4v12h-4V6zm7 2h4v8h-4V8z"/></svg>
+        <span>桥接与转发</span>
+      </button>
+      <button class="nav-item" data-view="network">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9h3a6 6 0 0 1 12 0h3a9 9 0 0 0-9-9zm0 7a2 2 0 0 0-2 2c0 .7.4 1.4 1 1.7V21h2v-7.3c.6-.3 1-1 1-1.7a2 2 0 0 0-2-2z"/></svg>
+        <span>网络</span>
+      </button>
+      <button class="nav-item" data-view="tools">
+        <svg viewBox="0 0 24 24"><path d="M14 3a5 5 0 0 0-4.6 7L3 16.4V21h4.6l6.4-6.4A5 5 0 1 0 14 3z"/></svg>
+        <span>工具与诊断</span>
+      </button>
+      <button class="nav-item" data-view="system">
+        <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 4c0 .5 0 1-.1 1.4l2 1.6-2 3.4-2.4-1a8 8 0 0 1-2.4 1.4l-.4 2.6h-4l-.4-2.6a8 8 0 0 1-2.4-1.4l-2.4 1-2-3.4 2-1.6a9 9 0 0 1 0-2.8l-2-1.6 2-3.4 2.4 1A8 8 0 0 1 11.1 4l.4-2.6h4l.4 2.6a8 8 0 0 1 2.4 1.4l2.4-1 2 3.4-2 1.6c.1.4.1.9.1 1.4z"/></svg>
+        <span>系统</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div class="mini-status" id="sideStatus">
+        <span class="dot" id="sideDot"></span>
+        <span id="sideText">未连接</span>
+      </div>
+      <button class="link-btn" id="btnLogout">退出登录</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb">
+        <h1 id="pageTitle">总览</h1>
+        <span class="sub" id="pageSub">设备状态与光链路</span>
+      </div>
+      <div class="pills">
+        <div class="pill" id="pillPon"><i></i><b>PON</b><em>—</em></div>
+        <div class="pill" id="pillAuth"><i></i><b>AUTH</b><em>—</em></div>
+        <div class="pill" id="pillLink"><i></i><b>LINK</b><em>—</em></div>
+      </div>
+      <div class="top-actions">
+        <button class="btn ghost icon" id="btnRefresh" title="刷新">
+          <svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+        </button>
+        <button class="btn ghost danger" id="btnReboot">重启设备</button>
+      </div>
+    </header>
+
+    <main id="views" class="views">
+
+      <!-- ================= 总览 ================= -->
+      <section class="view active" data-view="dashboard">
+        <div class="grid gap16">
+
+          <div class="card span2">
+            <div class="card-head">
+              <h2>链路状态</h2>
+              <span class="tag" id="dashMode">—</span>
+            </div>
+            <div class="status-rows">
+              <div class="srow">
+                <span class="srow-k">PON 注册</span>
+                <span class="srow-v" id="dashPon">—</span>
+                <span class="srow-n">OLT MPCP 注册状态</span>
+              </div>
+              <div class="srow">
+                <span class="srow-k">业务认证</span>
+                <span class="srow-v" id="dashAuth">—</span>
+                <span class="srow-n">LLID 上下行流量使能</span>
+              </div>
+              <div class="srow">
+                <span class="srow-k">OLT MAC</span>
+                <span class="srow-v mono" id="dashOlt">—</span>
+                <span class="srow-n">对端局端设备</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card span2 optics-card">
+            <div class="card-head">
+              <h2>光链路</h2>
+              <span class="tag" id="dashDdmTag">DDM</span>
+            </div>
+            <div class="optics-main">
+              <div class="opt-block">
+                <span class="opt-k">RX 收光</span>
+                <div class="opt-v"><b id="dashRx">—</b><em>dBm</em></div>
+              </div>
+              <div class="opt-block">
+                <span class="opt-k">TX 发光</span>
+                <div class="opt-v"><b id="dashTx">—</b><em>dBm</em></div>
+              </div>
+            </div>
+            <div class="gauge" id="rxGauge">
+              <div class="gauge-track">
+                <div class="gauge-zone bad"></div>
+                <div class="gauge-zone ok"></div>
+                <div class="gauge-zone warn"></div>
+                <div class="gauge-ptr" id="rxPtr"></div>
+              </div>
+              <div class="gauge-scale">
+                <span>-30</span><span>-25</span><span>-20</span><span>-15</span><span>-10</span><span>-7</span>
+              </div>
+              <p class="gauge-note">收光功率参考：-8 ~ -27 dBm 正常，低于 -27 dBm 链路不稳</p>
+            </div>
+            <div class="optics-sub">
+              <div><span>温度</span><b id="dashTemp">—</b></div>
+              <div><span>电压</span><b id="dashVcc">—</b></div>
+              <div><span>偏置</span><b id="dashBias">—</b></div>
+            </div>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>设备信息</h2></div>
+            <dl class="kv">
+              <div><dt>型号</dt><dd>CIG XE-99S</dd></div>
+              <div><dt>SoC</dt><dd>Cortina CA8271S · MIPS</dd></div>
+              <div><dt>固件</dt><dd id="dashFw">—</dd></div>
+              <div><dt>基础固件</dt><dd id="dashBfw">—</dd></div>
+              <div><dt>内核</dt><dd id="dashKern">—</dd></div>
+              <div><dt>运行时间</dt><dd id="dashUp">—</dd></div>
+              <div><dt>内存</dt><dd id="dashMem">—</dd></div>
+              <div><dt>管理地址</dt><dd class="mono" id="dashIp">—</dd></div>
+            </dl>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>身份与模式</h2></div>
+            <dl class="kv">
+              <div><dt>PON MAC</dt><dd class="mono" id="dashMac">—</dd></div>
+              <div><dt>PON 模式</dt><dd id="dashPonMode">—</dd></div>
+              <div><dt>强制桥接</dt><dd id="dashBridge">—</dd></div>
+              <div><dt>链路速率</dt><dd id="dashSpeed">—</dd></div>
+              <div><dt>收包</dt><dd id="dashRxB">—</dd></div>
+              <div><dt>发包</dt><dd id="dashTxB">—</dd></div>
+            </dl>
+          </div>
+
+          <div class="card span4 quick-card">
+            <div class="card-head"><h2>快捷操作</h2></div>
+            <div class="quick">
+              <button class="btn" data-goto="pon">修改 PON 参数</button>
+              <button class="btn" data-goto="tlv">配置 TLV 伪装</button>
+              <button class="btn" id="btnQuickBackup">下载配置备份</button>
+              <button class="btn" data-goto="tools">查看分区与诊断</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PON ================= -->
+      <section class="view" data-view="pon">
+        <div class="grid gap16">
+          <form class="card span4" data-group="pon">
+            <div class="card-head">
+              <h2>PON 身份参数</h2>
+              <span class="tag warn">写入后需重启生效</span>
+            </div>
+            <div class="form-grid">
+              <label class="fld">
+                <span>PON MAC 地址 <em>CFG_ID_MAC_ADDRESS</em></span>
+                <input type="text" data-field="pon_mac" placeholder="00:19:C7:00:00:00" spellcheck="false">
+                <small>EPON 认证的核心标识，须与运营商登记一致</small>
+              </label>
+              <label class="fld">
+                <span>LOID <em>CFG_ID_LOID</em></span>
+                <input type="text" data-field="loid" maxlength="24" spellcheck="false">
+                <small>存储为 24 字节 HEX 数组，仅支持 ASCII</small>
+              </label>
+              <label class="fld">
+                <span>LOID 密码 <em>CFG_ID_PASSWD</em></span>
+                <input type="text" data-field="loid_pwd" maxlength="12" spellcheck="false">
+                <small>12 字节 HEX 数组；无密码的省份留空</small>
+              </label>
+              <label class="fld">
+                <span>序列号 SN <em>CFG_ID_SERIAL_NUMBER</em></span>
+                <input type="text" data-field="sn" maxlength="24" spellcheck="false">
+                <small>CTC 常见 12 位（4 位厂商码 + 8 位流水）。固件不支持时保存会明确提示</small>
+              </label>
+              <label class="fld">
+                <span>PON 模式 <em>CFG_ID_PON_MAC_MODE</em></span>
+                <select data-field="pon_mode">
+                  <option value="0x02">0x02 · 10G-EPON 对称（10G/10G）</option>
+                  <option value="0x01">0x01 · 10G-EPON 非对称（10G/1G）</option>
+                </select>
+                <small>切换 XGS-PON 需要刷对应固件，不能只改这里</small>
+              </label>
+              <label class="fld">
+                <span>Report 模式 <em>CFG_ID_PON_REPORT_MODE</em></span>
+                <select data-field="report_mode">
+                  <option value="0">0 · 2QS-8Q</option>
+                  <option value="1">1 · 1QS-8Q</option>
+                  <option value="2">2 · 1QS-1Q</option>
+                  <option value="3">3 · 2QS-1Q</option>
+                  <option value="4">4 · 4QS-1Q</option>
+                  <option value="5">5 · 2QS-4P（NTT 专用）</option>
+                </select>
+                <small>非必要不要改动</small>
+              </label>
+            </div>
+            <div class="card-foot">
+              <span class="hint">实际写入位置以「系统 → 环境自检」的探测结果为准，每次写入前自动备份</span>
+              <button class="btn primary" type="submit">保存 PON 参数</button>
+            </div>
+          </form>
+
+          <div class="card span4">
+            <div class="card-head">
+              <h2>国内运营商 EPON 认证方式</h2>
+              <span class="tag" id="ponVariantTag">固件识别中…</span>
+            </div>
+            <dl class="kv wide">
+              <div><dt>中国电信</dt><dd>以 <b>LOID + LOID 密码</b> 为主，部分省份额外绑定 PON MAC。LOID 通常是 ≤24 位字母数字，密码 ≤12 位。</dd></div>
+              <div><dt>中国联通</dt><dd>常见 <b>LOID</b> 或 <b>SN</b>，部分省份用 PON MAC 认证。</dd></div>
+              <div><dt>中国移动</dt><dd>常见 <b>SN</b> 认证，部分场景用 PON MAC。</dd></div>
+              <div><dt>怎么填</dt><dd>不需要"选择"认证模式：把运营商要求的那几项填齐，固件会按已填字段自动协商。填多了不会出错，填少了会注册不上。</dd></div>
+              <div><dt>照抄来源</dt><dd>原光猫背面标签，或旧光猫管理页面里的「逻辑标识 / LOID / 设备标识」。</dd></div>
+            </dl>
+            <div class="card-foot">
+              <span class="hint">本卡片只做说明，写入仍走左侧表单</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TLV ================= -->
+      <section class="view" data-view="tlv">
+        <div class="grid gap16">
+          <div class="card span4">
+            <div class="card-head">
+              <h2>TLV 伪装（DPoE D7/xx）</h2>
+              <span class="tag">上报给 OLT 的标识</span>
+            </div>
+            <p class="note">
+              运营商 OLT 会校验 ONT 上报的厂商、型号、硬件版本等信息。修改后需重启，
+              并在设备启动后由固件读取 uboot 环境变量生效。
+            </p>
+            <div class="tlv-tools">
+              <button class="btn sm" id="btnTlvSaveTpl">存为模板</button>
+              <select id="tlvTplSelect"><option value="">应用模板…</option></select>
+              <button class="btn sm ghost" id="btnTlvDelTpl">删除模板</button>
+            </div>
+          </div>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/03 固件信息</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>Boot 版本 <em>CA8271_FW_BOOTVER</em></span><input type="text" data-field="fw_bootver"></label>
+              <label class="fld"><span>Boot CRC <em>CA8271_FW_BOOTCRC</em></span><input type="text" data-field="fw_bootcrc"></label>
+              <label class="fld"><span>固件版本 <em>CA8271_FW_FWVER</em></span><input type="text" data-field="fw_fwver"></label>
+              <label class="fld"><span>固件 CRC <em>CA8271_FW_FWCRC</em></span><input type="text" data-field="fw_fwcrc"></label>
+            </div>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/04 芯片信息</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>JDEC ID <em>CA8271_CHIP_ID</em></span><input type="text" data-field="chip_id" placeholder="0879"></label>
+              <label class="fld"><span>芯片型号 <em>CA8271_CHIP_MODEL</em></span><input type="text" data-field="chip_model" placeholder="4701"></label>
+            </div>
+            <p class="note sm">常见组合：CA8271/CA8289 = <code>0879 / 4701</code>，BCM55030 = <code>0203 / 4701</code></p>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/05 生产日期</h2></div>
+            <div class="form-grid two">
+              <label class="fld"><span>年 <em>CA8271_MANU_YEAR</em></span><input type="text" data-field="manu_year" placeholder="2023" maxlength="4"></label>
+              <label class="fld"><span>月 <em>CA8271_MANU_MON</em></span><input type="text" data-field="manu_mon" placeholder="09" maxlength="2"></label>
+            </div>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/11 厂商名</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>Vendor Name <em>CA8271_VEN_NAME</em></span><input type="text" data-field="ven_name" maxlength="4" placeholder="CIG"></label>
+              <small>通常 4 个字符，长度不符可能被 OLT 拒绝</small>
+            </div>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/12 型号</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>Model <em>onu_manu_modle.ini → model</em></span><input type="text" data-field="model" maxlength="64"></label>
+            </div>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/13 硬件版本</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>Hardware Version <em>CA8271_HW_VER</em></span><input type="text" data-field="hw_ver" maxlength="32"></label>
+              <small>对应 scfg 的 <code>CFG_ID_HW_VERSION</code>（4 字节），此处为上报字符串</small>
+            </div>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+
+          <form class="card span2" data-group="tlv">
+            <div class="card-head"><h2>D7/06 厂商信息</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>Manu Info <em>onu_manu_modle.ini → manu_info</em></span><input type="text" data-field="manu_info" maxlength="64"></label>
+            </div>
+            <div class="card-foot"><button class="btn primary sm" type="submit">保存</button></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= 桥接 ================= -->
+      <section class="view" data-view="bridge">
+        <div class="grid gap16">
+          <form class="card span4" data-group="bridge">
+            <div class="card-head">
+              <h2>转发控制</h2>
+              <span class="tag warn">写入 uboot 环境变量</span>
+            </div>
+
+            <div class="switch-row">
+              <div class="switch-txt">
+                <b>强制桥接<em>CA8271_FORCE_BRIDGE</em></b>
+                <p>忽略 OLT 下发的转发规则，强制把 LLID 0–15 桥接到 UNI 口。运营商的 802.1X 认证会被绕过，适合自己拨号的场景。</p>
+              </div>
+              <label class="switch"><input type="checkbox" data-field="force_bridge" data-bool="1"><i></i></label>
+            </div>
+
+            <div class="switch-row">
+              <div class="switch-txt">
+                <b>MAC 过滤<em>CA8271_FORCE_BRIDGE_MAC</em></b>
+                <p>只允许指定 MAC 的报文上行。运营商配了光猫（HGW）时建议填写其 MAC，<code>00:00:00:00:00:00</code> 表示关闭。</p>
+              </div>
+              <input type="text" class="mono inline-input" data-field="force_bridge_mac" placeholder="00:00:00:00:00:00">
+            </div>
+
+            <div class="switch-row">
+              <div class="switch-txt">
+                <b>强制业务<em>CA8271_FORCE_TRAFFIC</em></b>
+                <p>忽略 OLT 认证结果，强制打开 MPCP 上行。仅在设备被封禁、需要应急连通时使用。</p>
+              </div>
+              <label class="switch"><input type="checkbox" data-field="force_traffic" data-bool="1"><i></i></label>
+            </div>
+
+            <div class="card-foot">
+              <span class="hint">改动写入后需重启设备才会加载</span>
+              <button class="btn primary" type="submit">保存转发配置</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= 网络 ================= -->
+      <section class="view" data-view="network">
+        <div class="grid gap16">
+          <form class="card span2" data-group="net">
+            <div class="card-head"><h2>管理地址</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>IP 地址</span><input type="text" data-field="net_ip" class="mono"></label>
+              <label class="fld"><span>子网掩码</span><input type="text" data-field="net_mask" class="mono"></label>
+              <label class="fld"><span>网关</span><input type="text" id="netGw" class="mono" readonly></label>
+            </div>
+            <p class="note sm">写入 <code id="netConfPath">/etc/network/interfaces</code> 的 eth0 段，修改后需重启生效。改错会导致无法访问，请记录新地址。</p>
+            <div class="card-foot">
+              <button class="btn primary" type="submit">保存地址</button>
+            </div>
+          </form>
+
+          <div class="card span2">
+            <div class="card-head"><h2>接口流量</h2></div>
+            <dl class="kv">
+              <div><dt>接口</dt><dd>eth0</dd></div>
+              <div><dt>协商速率</dt><dd id="netSpeed">—</dd></div>
+              <div><dt>接收</dt><dd id="netRx">—</dd></div>
+              <div><dt>发送</dt><dd id="netTx">—</dd></div>
+            </dl>
+            <p class="note sm">SFP+ 主机侧协商速率一般显示 10000 Mb/s；若为 1000 说明主机口只跑了千兆。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 工具 ================= -->
+      <section class="view" data-view="tools">
+        <div class="grid gap16">
+          <div class="card span2">
+            <div class="card-head"><h2>配置备份</h2></div>
+            <p class="note">导出 scfg、uboot 环境变量与 ini 配置的纯文本备份，出问题时可照着改回去。</p>
+            <div class="quick">
+              <button class="btn" id="btnDlConfig">下载配置文本</button>
+            </div>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>诊断命令</h2></div>
+            <p class="note">直接查看设备原始输出，排障时最有用。</p>
+            <div class="seg" id="diagTabs">
+              <button class="seg-item active" data-diag="pon">PON 状态</button>
+              <button class="seg-item" data-diag="scfg">scfg</button>
+              <button class="seg-item" data-diag="env">uboot env</button>
+              <button class="seg-item" data-diag="mtd">分区表</button>
+              <button class="seg-item" data-diag="net">网络</button>
+              <button class="seg-item" data-diag="ddm">DDM 原始值</button>
+              <button class="seg-item" data-diag="log">WebUI 日志</button>
+            </div>
+            <div class="term" id="diagOut">点击上方标签查看原始输出…</div>
+            <div class="card-foot"><button class="btn sm" id="btnDiagReload">重新执行</button></div>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head"><h2>NAND 分区</h2><span class="tag">A/B 双启动</span></div>
+            <div class="table-wrap">
+              <table class="tbl" id="mtdTable">
+                <thead><tr><th>#</th><th>名称</th><th>大小</th><th>擦除块</th><th>操作</th></tr></thead>
+                <tbody><tr><td colspan="5" class="muted">加载中…</td></tr></tbody>
+              </table>
+            </div>
+            <p class="note sm">导出为原始 NAND 镜像（含 OOB），大分区下载较慢。刷机请参考 hack-gpon 的 nandwrite 流程。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 系统 ================= -->
+      <section class="view" data-view="system">
+        <div class="grid gap16">
+          <form class="card span2" id="pwdForm">
+            <div class="card-head"><h2>修改登录密码</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>当前密码</span><input type="password" id="pwdOld" autocomplete="current-password"></label>
+              <label class="fld"><span>新密码</span><input type="password" id="pwdNew" autocomplete="new-password"><small>至少 6 位</small></label>
+              <label class="fld"><span>确认新密码</span><input type="password" id="pwdNew2" autocomplete="new-password"></label>
+            </div>
+            <div class="card-foot"><button class="btn primary" type="submit">更新密码</button></div>
+          </form>
+
+          <div class="card span2">
+            <div class="card-head"><h2>危险操作</h2></div>
+            <div class="danger-list">
+              <div class="drow">
+                <div><b>重启设备</b><p>约 180 秒恢复，期间链路中断。</p></div>
+                <button class="btn danger" data-action="reboot">重启</button>
+              </div>
+              <div class="drow">
+                <div><b>清空 overlay 配置</b><p>删除 <code>/overlay/upper/*</code>，相当于恢复出厂，会丢失本页配置。</p></div>
+                <button class="btn danger" data-action="factory_reset">恢复出厂</button>
+              </div>
+              <div class="drow">
+                <div><b>重新触发 PON 注册</b><p>重启固件的 PON/OMCI 服务，不改动 eth0，管理连接不会中断。</p></div>
+                <button class="btn" data-action="pon_reset">重新注册</button>
+              </div>
+              <div class="drow">
+                <div><b>重启 WebUI 服务</b><p>仅重启本控制台进程，不影响 PON 业务。</p></div>
+                <button class="btn" data-action="restart_webui">重启服务</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head">
+              <h2>环境自检</h2>
+              <span class="tag" id="probeTag">—</span>
+            </div>
+            <dl class="kv wide">
+              <div><dt>固件类型</dt><dd id="pbVariant">—</dd></div>
+              <div><dt>固件版本</dt><dd class="mono" id="pbVersion">—</dd></div>
+              <div><dt>内置 WebUI</dt><dd id="pbWeb">—</dd></div>
+              <div><dt>配置读入</dt><dd class="mono" id="pbRead">—</dd></div>
+              <div><dt>配置写入</dt><dd class="mono" id="pbWrite">—</dd></div>
+              <div><dt>ca-iros 端口</dt><dd class="mono" id="pbPort">—</dd></div>
+              <div><dt>可用工具</dt><dd class="mono" id="pbTools">—</dd></div>
+              <div><dt>已被占用</dt><dd class="mono" id="pbBusy">—</dd></div>
+              <div><dt>内核</dt><dd class="mono" id="pbKernel">—</dd></div>
+            </dl>
+            <div class="card-foot">
+              <span class="hint">本控制台的所有写入都落在上面「配置写入」列出的路径</span>
+              <button class="btn" id="btnProbe">重新探测</button>
+            </div>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head"><h2>关于</h2></div>
+            <dl class="kv wide">
+              <div><dt>WebUI 版本</dt><dd id="aboutVer">—</dd></div>
+              <div><dt>适用设备</dt><dd>CIG XE-99S / XG-99S / Hisense LTF-7263·7267-BH+ / FS XGS-ONU-25-20NI</dd></div>
+              <div><dt>上游项目</dt><dd class="mono">github.com/YuukiJapanTech/CA8271x</dd></div>
+              <div><dt>资料</dt><dd class="mono">hack-gpon.org/epon/CIG_XE-99S</dd></div>
+            </dl>
+            <p class="note sm">
+              本控制台只做本机配置的读写，不联网。修改 ONT 标识可能违反运营商条款，
+              由此导致的服务中止风险自负。
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <h3 id="modalTitle">确认操作</h3>
+    <p id="modalText"></p>
+    <div class="modal-foot">
+      <button class="btn ghost" id="modalCancel">取消</button>
+      <button class="btn danger" id="modalOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
