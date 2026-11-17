@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f18">
+<title>XE-99S · 10G-EPON 光猫棒控制台</title>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230d1522'/><path d='M7 20h18M10 20V13m6 7V9m6 11v-5' stroke='%2338e0c8' stroke-width='2.4' stroke-linecap='round'/></svg>">
+</head>
+<body>
+
+<!-- ===================== 登录 ===================== -->
+<div class="login-wrap" id="loginView">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="login-brand">
+      <svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#0d1522"/>
+        <path d="M7 20h18M10 20V13m6 7V9m6 11v-5" stroke="#38e0c8" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div>
+        <h1>XE-99S</h1>
+        <p>CIG · Cortina CA8271S · 10G-EPON SFP+ ONT</p>
+      </div>
+    </div>
+
+    <label class="fld">
+      <span>控制台账号</span>
+      <input type="text" id="loginUser" value="admin" autocapitalize="off" spellcheck="false">
+    </label>
+    <label class="fld">
+      <span>控制台密码</span>
+      <input type="password" id="loginPass" placeholder="默认 admin" autocomplete="current-password">
+    </label>
+
+    <button class="btn primary block" type="submit" id="loginBtn">登录控制台</button>
+    <p class="login-msg" id="loginMsg"></p>
+    <p class="login-hint">本页账号由 WebUI 独立维护 · 登录后在控制台连接猫棒</p>
+  </form>
+</div>
+
+<!-- ===================== 主体 ===================== -->
+<div class="app" id="appView" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#111a29"/>
+        <path d="M7 20h18M10 20V13m6 7V9m6 11v-5" stroke="#38e0c8" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div class="brand-txt">
+        <strong>XE-99S</strong>
+        <span>ONT Console</span>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm10 8h8V11h-8v10zM3 21h8v-6H3v6zM13 9h8V3h-8v6z"/></svg>
+        <span>总览</span>
+      </button>
+      <button class="nav-item" data-view="pon">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3a7 7 0 0 1 0 14 7 7 0 0 1 0-14zm0 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+        <span>PON 与认证</span>
+      </button>
+      <button class="nav-item" data-view="network">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-9 9h3a6 6 0 0 1 12 0h3a9 9 0 0 0-9-9zm0 7a2 2 0 0 0-2 2c0 .7.4 1.4 1 1.7V21h2v-7.3c.6-.3 1-1 1-1.7a2 2 0 0 0-2-2z"/></svg>
+        <span>网络</span>
+      </button>
+      <button class="nav-item" data-view="tools">
+        <svg viewBox="0 0 24 24"><path d="M14 3a5 5 0 0 0-4.6 7L3 16.4V21h4.6l6.4-6.4A5 5 0 1 0 14 3z"/></svg>
+        <span>工具与诊断</span>
+      </button>
+      <button class="nav-item" data-view="system">
+        <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9 4c0 .5 0 1-.1 1.4l2 1.6-2 3.4-2.4-1a8 8 0 0 1-2.4 1.4l-.4 2.6h-4l-.4-2.6a8 8 0 0 1-2.4-1.4l-2.4 1-2-3.4 2-1.6a9 9 0 0 1 0-2.8l-2-1.6 2-3.4 2.4 1A8 8 0 0 1 11.1 4l.4-2.6h4l.4 2.6a8 8 0 0 1 2.4 1.4l2.4-1 2 3.4-2 1.6c.1.4.1.9.1 1.4z"/></svg>
+        <span>系统</span>
+      </button>
+    </nav>
+
+    <div class="side-foot">
+      <div class="mini-status" id="sideStatus">
+        <span class="dot" id="sideDot"></span>
+        <span id="sideText">未连接</span>
+      </div>
+      <button class="link-btn" id="btnLogout">退出登录</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb">
+        <h1 id="pageTitle">总览</h1>
+        <span class="sub" id="pageSub">设备状态与光链路</span>
+      </div>
+      <div class="pills">
+        <div class="pill" id="pillPon"><i></i><b>PON</b><em>—</em></div>
+        <div class="pill" id="pillAuth"><i></i><b>AUTH</b><em>—</em></div>
+        <div class="pill" id="pillLink"><i></i><b>LINK</b><em>—</em></div>
+      </div>
+      <div class="top-actions">
+        <button class="btn ghost icon" id="btnRefresh" title="刷新">
+          <svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+        </button>
+        <button class="btn ghost danger" id="btnReboot">重启设备</button>
+      </div>
+    </header>
+
+    <main id="views" class="views">
+
+      <!-- 设备连不上时的全局提示：不能让用户对着一屏横杠猜原因 -->
+      <div class="banner bad" id="connBanner" hidden>
+        <div class="banner-main">
+          <b id="connBannerTitle">无法连接设备</b>
+          <span id="connBannerMsg">—</span>
+        </div>
+        <div class="banner-acts">
+          <button class="btn sm" id="btnBannerRetry" type="button">重试</button>
+          <button class="btn sm" id="btnBannerFix" type="button">去修改地址</button>
+        </div>
+      </div>
+
+      <!-- ================= 总览 ================= -->
+      <section class="view active" data-view="dashboard">
+        <div class="grid gap16">
+
+          <div class="card span2">
+            <div class="card-head">
+              <h2>链路状态</h2>
+              <span class="tag" id="dashMode">—</span>
+            </div>
+            <div class="status-rows">
+              <div class="srow">
+                <span class="srow-k">PON 注册</span>
+                <span class="srow-v" id="dashPon">—</span>
+                <span class="srow-n">OLT MPCP 注册状态</span>
+              </div>
+              <div class="srow">
+                <span class="srow-k">业务认证</span>
+                <span class="srow-v" id="dashAuth">—</span>
+                <span class="srow-n">LLID 上下行流量使能</span>
+              </div>
+              <div class="srow">
+                <span class="srow-k">LLID</span>
+                <span class="srow-v mono" id="dashLlid">—</span>
+                <span class="srow-n">OLT 分配的 MPCP LLID</span>
+              </div>
+              <div class="srow">
+                <span class="srow-k">OLT MAC</span>
+                <span class="srow-v mono" id="dashOlt">—</span>
+                <span class="srow-n">对端局端设备</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card span2 optics-card">
+            <div class="card-head">
+              <h2>光链路</h2>
+              <span class="tag" id="dashDdmTag">DDM</span>
+            </div>
+            <div class="optics-main">
+              <div class="opt-block">
+                <span class="opt-k">RX 收光</span>
+                <div class="opt-v"><b id="dashRx">—</b><em>dBm</em></div>
+              </div>
+              <div class="opt-block">
+                <span class="opt-k">TX 发光</span>
+                <div class="opt-v"><b id="dashTx">—</b><em>dBm</em></div>
+              </div>
+            </div>
+            <div class="gauge" id="rxGauge">
+              <div class="gauge-track">
+                <div class="gauge-zone bad"></div>
+                <div class="gauge-zone ok"></div>
+                <div class="gauge-zone warn"></div>
+                <div class="gauge-ptr" id="rxPtr"></div>
+              </div>
+              <div class="gauge-scale">
+                <span>-30</span><span>-25</span><span>-20</span><span>-15</span><span>-10</span><span>-7</span>
+              </div>
+              <p class="gauge-note">收光功率参考：-8 ~ -27 dBm 正常，低于 -27 dBm 链路不稳</p>
+            </div>
+            <div class="optics-sub">
+              <div><span>温度</span><b id="dashTemp">—</b></div>
+              <div><span>电压</span><b id="dashVcc">—</b></div>
+              <div><span>偏置</span><b id="dashBias">—</b></div>
+            </div>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>设备信息</h2></div>
+            <dl class="kv">
+              <div><dt>型号</dt><dd>CIG XE-99S</dd></div>
+              <div><dt>SoC</dt><dd>Cortina CA8271S · MIPS</dd></div>
+              <div><dt>应用版本</dt><dd id="dashFw">—</dd></div>
+              <div><dt>固件构建</dt><dd id="dashBfw">—</dd></div>
+              <div><dt>内核</dt><dd id="dashKern">—</dd></div>
+              <div><dt>运行时间</dt><dd id="dashUp">—</dd></div>
+              <div><dt>内存</dt><dd id="dashMem">—</dd></div>
+              <div><dt>管理地址</dt><dd class="mono" id="dashIp">—</dd></div>
+            </dl>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>身份与数据通路</h2></div>
+            <dl class="kv">
+              <div><dt>PON MAC</dt><dd class="mono" id="dashMac">—</dd></div>
+              <div><dt>PON 模式</dt><dd id="dashPonMode">—</dd></div>
+              <div><dt>数据通路</dt><dd id="dashDatapath">—</dd></div>
+              <div><dt>链路速率</dt><dd id="dashSpeed">—</dd></div>
+              <div><dt>收包</dt><dd id="dashRxB">—</dd></div>
+              <div><dt>发包</dt><dd id="dashTxB">—</dd></div>
+            </dl>
+            <p class="note sm">数据通路读自 scfg 的 <code>CFG_ID_DATAPATH_MODE</code>：1 = 桥接（SFU），0 = 路由（R/G）。</p>
+          </div>
+
+          <div class="card span4 quick-card">
+            <div class="card-head"><h2>快捷操作</h2></div>
+            <div class="quick">
+              <button class="btn" data-goto="pon">修改 PON 参数</button>
+              <button class="btn" data-goto="pon">查看 PON 链路详情</button>
+              <button class="btn" id="btnQuickBackup">下载配置备份</button>
+              <button class="btn" data-goto="tools">查看分区与诊断</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PON ================= -->
+      <section class="view" data-view="pon">
+        <div class="grid gap16">
+          <form class="card span2" data-group="pon">
+            <div class="card-head">
+              <h2>PON 身份参数</h2>
+              <span class="tag warn">写入后需重启生效</span>
+            </div>
+            <div class="form-grid">
+              <label class="fld">
+                <span>PON MAC 地址 <em>CFG_ID_MAC_ADDRESS</em></span>
+                <input type="text" data-field="pon_mac" placeholder="00:19:C7:00:00:00" spellcheck="false">
+                <small>EPON 认证的核心标识，须与运营商登记一致；保存时会同步主机侧 <code>CFG_ID_NE_MAC_ADDR0</code></small>
+              </label>
+              <label class="fld">
+                <span>LOID <em>CFG_ID_LOID</em></span>
+                <input type="text" data-field="loid" maxlength="24" spellcheck="false">
+                <small>存为 24 字节 HEX 数组（原厂固定长度），仅支持 ASCII</small>
+              </label>
+              <label class="fld">
+                <span>LOID 密码 <em>CFG_ID_PASSWD</em></span>
+                <input type="text" data-field="loid_pwd" maxlength="12" spellcheck="false">
+                <small>12 字节 HEX 数组；无密码的省份留空</small>
+              </label>
+              <label class="fld">
+                <span>PON 模式 <em>CFG_ID_PON_MAC_MODE</em></span>
+                <select data-field="pon_mode">
+                  <option value="0x02">0x02 · 10G-EPON 对称（10G/10G）</option>
+                  <option value="0x01">0x01 · 10G-EPON 非对称（10G/1G）</option>
+                </select>
+                <small>原厂固件只支持这两种 EPON 模式；XGS-PON 需要换固件</small>
+              </label>
+              <label class="fld">
+                <span>Report 模式 <em>CFG_ID_PON_REPORT_MODE</em></span>
+                <select data-field="report_mode">
+                  <option value="0">0 · 2QS-8Q</option>
+                  <option value="1">1 · 1QS-8Q</option>
+                  <option value="2">2 · 1QS-1Q</option>
+                  <option value="3">3 · 2QS-1Q</option>
+                  <option value="4">4 · 4QS-1Q</option>
+                  <option value="5">5 · 2QS-4P（NTT 专用）</option>
+                </select>
+                <small>原厂默认 0；取值来自固件注释，非必要不要改动</small>
+              </label>
+            </div>
+            <div class="card-foot">
+              <span class="hint" id="ponPathHint">写入位置见右侧「实际生效参数」</span>
+              <button class="btn primary" type="submit">保存 PON 参数</button>
+            </div>
+          </form>
+
+          <div class="card span2">
+            <div class="card-head">
+              <h2>当前 PON 链路</h2>
+              <span class="tag" id="ponLinkTag">只读</span>
+            </div>
+            <dl class="kv">
+              <div><dt>注册状态</dt><dd id="ponReg">—</dd></div>
+              <div><dt>MPCP LLID</dt><dd class="mono" id="ponLlid">—</dd></div>
+              <div><dt>OLT MAC</dt><dd class="mono" id="ponOlt">—</dd></div>
+              <div><dt>上行使能</dt><dd id="ponUs">—</dd></div>
+              <div><dt>下行使能</dt><dd id="ponDs">—</dd></div>
+              <div><dt>去注册原因</dt><dd class="mono" id="ponCause">—</dd></div>
+              <div><dt>重试次数</dt><dd id="ponRetry">—</dd></div>
+              <div><dt>PON 通道</dt><dd class="mono" id="ponPort">—</dd></div>
+            </dl>
+            <p class="note sm">
+              数据来自设备内置的 <code>iros</code>：
+              <code>wca_epon_mpcp_registration_status_get</code> 与
+              <code>wca_epon_llid_traffic_enable_get</code>。
+              注册成功但上下行未使能，通常是 OLT 侧业务未开或 LOID 未通过认证。
+            </p>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head">
+              <h2>实际生效参数（只读）</h2>
+              <span class="tag" id="fwCfgTag">固件读取值</span>
+            </div>
+            <div class="ro-grid">
+              <div><span>数据通路 <em>CFG_ID_DATAPATH_MODE</em></span><b id="fcDatapath">—</b></div>
+              <div><span>LLID 模式 <em>CFG_ID_PON_LLID_MODE</em></span><b id="fcLlidMode">—</b></div>
+              <div><span>LLID 数量 <em>CFG_ID_PON_LLID_NUM</em></span><b id="fcLlidNum">—</b></div>
+              <div><span>OAM 模式 <em>CFG_ID_OAM_MODE</em></span><b id="fcOam">—</b></div>
+              <div><span>加密模式 <em>CFG_ID_EPON_ENCRYPTION_MODE</em></span><b id="fcEnc">—</b></div>
+              <div><span>开机注册 <em>CFG_ID_EN_REGISTER_AFTER_BOOT</em></span><b id="fcReg">—</b></div>
+              <div><span>广播/组播 <em>CFG_ID_PON_DS_FORWARD_BCMC</em></span><b id="fcBcmc">—</b></div>
+              <div><span>硬件版本 <em>CFG_ID_HW_VERSION</em></span><b class="mono" id="fcHw">—</b></div>
+            </div>
+            <p class="note sm" id="pathNote">这些值由固件启动时从 scfg.txt 读取，改它们等于改 OLT 看到的行为，因此只读展示。</p>
+
+            <div class="card-head sub-head">
+              <h2>出厂标识（mfginfo 分区）</h2>
+              <span class="tag">只读 · 产线写入</span>
+            </div>
+            <div class="chips" id="identChips"><span class="chip muted">读取中…</span></div>
+            <p class="note sm">
+              原厂固件把型号、厂商、硬件版本和序列号写在 <code>mfginfo</code> 分区，
+              <strong>没有任何 scfg 键可以改它</strong>，所以本控制台不提供序列号写入。
+              若运营商要求改 SN，只能在刷机/产线工具层面处理。
+            </p>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head">
+              <h2>国内运营商 EPON 认证方式</h2>
+              <span class="tag" id="ponVariantTag">原厂 CTC 固件</span>
+            </div>
+            <dl class="kv wide">
+              <div><dt>中国电信</dt><dd>以 <b>LOID + LOID 密码</b> 为主，部分省份额外绑定 PON MAC。LOID 通常是 ≤24 位字母数字，密码 ≤12 位。</dd></div>
+              <div><dt>中国联通</dt><dd>常见 <b>LOID</b> 或 <b>SN</b>，部分省份用 PON MAC 认证。</dd></div>
+              <div><dt>中国移动</dt><dd>常见 <b>SN</b> 认证，部分场景用 PON MAC。</dd></div>
+              <div><dt>怎么填</dt><dd>不需要"选择"认证模式：把运营商要求的那几项填齐，固件会按已填字段自动协商。填多了不会出错，填少了会注册不上。</dd></div>
+              <div><dt>照抄来源</dt><dd>原光猫背面标签，或旧光猫管理页面里的「逻辑标识 / LOID / 设备标识」。</dd></div>
+            </dl>
+            <div class="card-foot">
+              <span class="hint">本卡片只做说明，写入仍走上方表单</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 网络 ================= -->
+      <section class="view" data-view="network">
+        <div class="grid gap16">
+          <form class="card span2" data-group="net">
+            <div class="card-head"><h2>管理地址</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>IP 地址</span><input type="text" data-field="net_ip" class="mono"></label>
+              <label class="fld"><span>子网掩码</span><input type="text" data-field="net_mask" class="mono"></label>
+              <label class="fld"><span>网关</span><input type="text" id="netGw" class="mono" readonly></label>
+            </div>
+            <p class="note sm">写入 <code id="netConfPath">/etc/network/interfaces</code> 的 eth0 段，修改后需重启生效。改错会导致无法访问，请记录新地址。</p>
+            <div class="card-foot">
+              <button class="btn primary" type="submit">保存地址</button>
+            </div>
+          </form>
+
+          <div class="card span2">
+            <div class="card-head"><h2>接口状态</h2></div>
+            <dl class="kv">
+              <div><dt>接口</dt><dd>eth0（SFP+ 主机侧）</dd></div>
+              <div><dt>MAC</dt><dd class="mono" id="netMac">—</dd></div>
+              <div><dt>协商速率</dt><dd id="netSpeed">—</dd></div>
+              <div><dt>接收</dt><dd id="netRx">—</dd></div>
+              <div><dt>发送</dt><dd id="netTx">—</dd></div>
+              <div><dt>数据通路</dt><dd id="netDatapath">—</dd></div>
+            </dl>
+            <p class="note sm">SFP+ 主机侧协商速率一般显示 10000 Mb/s；若为 1000 说明主机口只跑了千兆，10G 业务会掉速。</p>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head"><h2>关于 VLAN</h2></div>
+            <p class="note">
+              原厂固件是桥接型 SFU，802.1Q 报文在 PON 与 UNI 之间<strong>原样透传</strong>：
+              带 VLAN tag 的帧进出都不改写，所以运营商 OLT 下发的 VLAN 规则照常生效，
+              本机不需要也不应该再做一次 VLAN 配置。若你在路由侧需要指定 VLAN，
+              在路由器/交换机上配即可，猫棒侧保持桥接。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 工具 ================= -->
+      <section class="view" data-view="tools">
+        <div class="grid gap16">
+          <div class="card span2">
+            <div class="card-head"><h2>配置备份</h2></div>
+            <p class="note">导出 scfg、管理地址与出厂标识的纯文本备份，出问题时可照着改回去。</p>
+            <div class="quick">
+              <button class="btn" id="btnDlConfig">下载配置文本</button>
+            </div>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>诊断命令</h2></div>
+            <p class="note">直接查看设备原始输出，排障时最有用。</p>
+            <div class="seg" id="diagTabs">
+              <button class="seg-item active" data-diag="pon">PON 状态</button>
+              <button class="seg-item" data-diag="scfg">scfg</button>
+              <button class="seg-item" data-diag="ddm">DOM 原始值</button>
+              <button class="seg-item" data-diag="mtd">分区表</button>
+              <button class="seg-item" data-diag="net">网络</button>
+              <button class="seg-item" data-diag="env">uboot env</button>
+              <button class="seg-item" data-diag="log">WebUI 日志</button>
+            </div>
+            <div class="term" id="diagOut">点击上方标签查看原始输出…</div>
+            <div class="card-foot"><button class="btn sm" id="btnDiagReload">重新执行</button></div>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head"><h2>NAND 分区</h2><span class="tag">A/B 双启动</span></div>
+            <div class="table-wrap">
+              <table class="tbl" id="mtdTable">
+                <thead><tr><th>#</th><th>名称</th><th>大小</th><th>擦除块</th><th>操作</th></tr></thead>
+                <tbody><tr><td colspan="5" class="muted">加载中…</td></tr></tbody>
+              </table>
+            </div>
+            <p class="note sm">导出为原始 NAND 镜像（含 OOB），大分区下载较慢。刷机请参考 hack-gpon 的 nandwrite 流程。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 系统 ================= -->
+      <section class="view" data-view="system">
+        <div class="grid gap16">
+          <form class="card span2" id="pwdForm">
+            <div class="card-head"><h2>修改登录密码</h2></div>
+            <div class="form-grid one">
+              <label class="fld"><span>当前密码</span><input type="password" id="pwdOld" autocomplete="current-password"></label>
+              <label class="fld"><span>新密码</span><input type="password" id="pwdNew" autocomplete="new-password"><small>至少 6 位</small></label>
+              <label class="fld"><span>确认新密码</span><input type="password" id="pwdNew2" autocomplete="new-password"></label>
+            </div>
+            <div class="card-foot"><button class="btn primary" type="submit">更新密码</button></div>
+          </form>
+
+          <div class="card span2">
+            <div class="card-head"><h2>危险操作</h2></div>
+            <div class="danger-list">
+              <div class="drow">
+                <div><b>重启设备</b><p>约 180 秒恢复，期间链路中断。</p></div>
+                <button class="btn danger" data-action="reboot">重启</button>
+              </div>
+              <div class="drow">
+                <div><b>清空 overlay 配置</b><p>删除 <code>/overlay/upper/*</code>，相当于恢复出厂，会丢失本页配置。</p></div>
+                <button class="btn danger" data-action="factory_reset">恢复出厂</button>
+              </div>
+              <div class="drow">
+                <div><b>重新触发 PON 注册</b><p>调用固件内置的 <code>ca_epon_reset_pon_mac</code> 复位 PON MAC，让 ONU 重新走一遍 MPCP 注册；不改动 eth0，管理连接不会中断。</p></div>
+                <button class="btn" data-action="pon_reset">重新注册</button>
+              </div>
+              <div class="drow">
+                <div><b>重启 WebUI 服务</b><p>仅重启本控制台进程，不影响 PON 业务。</p></div>
+                <button class="btn" data-action="restart_webui">重启服务</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card span4" id="connCard">
+            <div class="card-head">
+              <h2>设备连接</h2>
+              <span class="conn-state" id="connState"><i class="dot"></i><span id="connStateText">检测中…</span></span>
+            </div>
+            <form class="form-grid five" id="connForm">
+              <label class="fld">
+                <span>设备地址</span>
+                <input type="text" id="connHost" placeholder="192.168.0.1" autocomplete="off" spellcheck="false">
+                <small>猫棒的管理地址，本机能 ping 通即可，不必直连</small>
+              </label>
+              <label class="fld">
+                <span>SSH / Telnet 端口</span>
+                <input type="number" id="connPort" min="1" max="65535" placeholder="22">
+              </label>
+              <label class="fld">
+                <span>用户名</span>
+                <input type="text" id="connUser" placeholder="root" autocomplete="off" spellcheck="false">
+              </label>
+              <label class="fld">
+                <span>密码</span>
+                <input type="password" id="connPass" placeholder="留空表示不修改" autocomplete="new-password">
+                <small id="connPassHint">原厂固件为 admin</small>
+              </label>
+              <label class="fld">
+                <span>连接方式</span>
+                <select id="connTransport">
+                  <option value="ssh">SSH（推荐）</option>
+                  <option value="telnet">Telnet（需 expect，实验性）</option>
+                </select>
+              </label>
+              <details class="adv">
+                <summary>高级：私钥路径</summary>
+                <label class="fld">
+                  <span>私钥文件</span>
+                  <input type="text" id="connKey" placeholder="留空则用密码登录" autocomplete="off" spellcheck="false">
+                  <small>填了私钥就优先用密钥免密登录</small>
+                </label>
+              </details>
+            </form>
+            <div class="card-foot">
+              <span class="hint" id="connHint">改动保存后立即生效，无需重启服务</span>
+              <button class="btn" id="btnConnKey" type="button" hidden>推送公钥</button>
+              <button class="btn" id="btnConnTest" type="button">测试连接</button>
+              <button class="btn primary" id="btnConnSave" type="button">保存</button>
+            </div>
+          </div>
+
+          <div class="card span4">
+            <div class="card-head">
+              <h2>环境自检</h2>
+              <span class="tag" id="probeTag">—</span>
+            </div>
+            <dl class="kv wide">
+              <div><dt>运行模式</dt><dd id="pbMode">—</dd></div>
+              <div><dt>固件类型</dt><dd>SIEPON Package-C（原厂 CTC）</dd></div>
+              <div><dt>应用版本</dt><dd class="mono" id="pbVersion">—</dd></div>
+              <div><dt>iROS 命令</dt><dd class="mono" id="pbIros">—</dd></div>
+              <div><dt>PON 通道</dt><dd class="mono" id="pbPort">—</dd></div>
+              <div><dt>配置读入</dt><dd class="mono" id="pbRead">—</dd></div>
+              <div><dt>配置写入</dt><dd class="mono" id="pbWrite">—</dd></div>
+              <div><dt>出厂标识</dt><dd class="mono" id="pbMfg">—</dd></div>
+              <div><dt>可用工具</dt><dd class="mono" id="pbTools">—</dd></div>
+              <div><dt>内核</dt><dd class="mono" id="pbKernel">—</dd></div>
+            </dl>
+            <div class="card-foot">
+              <span class="hint">本控制台的所有写入都落在上面「配置写入」这一行</span>
+              <button class="btn" id="btnProbe">重新探测</button>
+            </div>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h2>关于</h2></div>
+            <dl class="kv wide">
+              <div><dt>WebUI 版本</dt><dd id="aboutVer">—</dd></div>
+              <div><dt>适用设备</dt><dd>CIG XE-99S（Cortina CA8271S）</dd></div>
+              <div><dt>适用固件</dt><dd>SIEPON Package-C · 原厂 CTC 固件</dd></div>
+              <div><dt>资料</dt><dd class="mono">hack-gpon.org/epon/CIG_XE-99S</dd></div>
+            </dl>
+            <p class="note sm">
+              本控制台只做本机配置的读写，不联网。修改 ONT 标识可能违反运营商条款，
+              由此导致的服务中止风险自负。
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<!-- ================= 首次连接向导 ================= -->
+<!-- 装在小主机上时必须先知道猫棒地址才能干活。这一步放在浏览器里做,
+     不用回后台改文件/重跑脚本。 -->
+<div class="modal" id="setupModal" hidden>
+  <div class="modal-card setup">
+    <div class="setup-head">
+      <span class="setup-badge">首次配置</span>
+      <h3>连上你的猫棒</h3>
+      <p>
+        本控制台跑在这台小主机上，通过 SSH 读取猫棒的数据——猫棒那侧不用装任何东西。
+        下面这一组信息对应猫棒本身，不是本页面的登录账号。
+      </p>
+    </div>
+    <form id="setupForm" class="form-grid two" autocomplete="off">
+      <label class="fld">
+        <span>猫棒地址</span>
+        <input type="text" id="setupHost" value="192.168.0.1" placeholder="192.168.0.1" spellcheck="false">
+        <small>猫棒的管理 IP，本机能 ping 通即可</small>
+      </label>
+      <label class="fld">
+        <span>SSH 端口</span>
+        <input type="number" id="setupPort" value="22" min="1" max="65535" placeholder="22">
+      </label>
+      <label class="fld">
+        <span>用户名</span>
+        <input type="text" id="setupUser" value="root" placeholder="root" spellcheck="false">
+      </label>
+      <label class="fld">
+        <span>密码</span>
+        <input type="password" id="setupPass" value="admin" placeholder="原厂默认 admin" autocomplete="new-password">
+        <small>原厂 SIEPON-C 固件为 root / admin</small>
+      </label>
+      <label class="fld">
+        <span>连接方式</span>
+        <select id="setupTransport">
+          <option value="ssh">SSH（推荐）</option>
+          <option value="telnet">Telnet（需 expect，实验性）</option>
+        </select>
+      </label>
+      <div class="fld">
+        <span>连接结果</span>
+        <div class="setup-state" id="setupState"><i class="dot"></i><span id="setupStateText">等待连接</span></div>
+      </div>
+    </form>
+    <p class="setup-msg" id="setupMsg"></p>
+    <div class="modal-foot between">
+      <button class="btn ghost" id="setupSkip" type="button">先看看界面</button>
+      <button class="btn primary" id="setupGo" type="button">连接</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <h3 id="modalTitle">确认操作</h3>
+    <p id="modalText"></p>
+    <div class="modal-foot">
+      <button class="btn ghost" id="modalCancel">取消</button>
+      <button class="btn danger" id="modalOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
